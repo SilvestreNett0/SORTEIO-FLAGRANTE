@@ -1,95 +1,33 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sorteio - Delegacia</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      text-align: center;
-      padding: 40px;
-    }
-    h1 {
-      color: #2c3e50;
-    }
-    .categoria {
-      margin: 20px auto;
-      padding: 20px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 400px;
-    }
-    button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-      background: #2980b9;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .resultado {
-      margin-top: 10px;
-      font-size: 18px;
-      color: #27ae60;
-      font-weight: bold;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sorteio de Procedimentos</title>
+  <script defer src="script.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-  <h1>Sistema de Sorteio - Delegacia</h1>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow">
+    <h1 class="text-2xl font-bold mb-4">Sorteio de Procedimentos - Delegacia</h1>
 
-  <div class="categoria">
-    <h2>1º Flagrante</h2>
-    <button onclick="sortear('resultado1')">Sortear</button>
-    <div class="resultado" id="resultado1"></div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block font-semibold">Escrivães (1 por linha):</label>
+        <textarea id="agents" class="w-full h-48 p-2 border rounded" placeholder="Ex: Verônica\nCarlos\nJoana"></textarea>
+      </div>
+
+      <div>
+        <label class="block font-semibold">Procedimentos (formato: Tipo - Quantidade):</label>
+        <textarea id="procedures" class="w-full h-48 p-2 border rounded" placeholder="Ex: Flagrante - 3\nMandado - 2\nVPI - 3\nUI - 2"></textarea>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <button onclick="drawAssignments()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Sortear</button>
+    </div>
+
+    <div id="results" class="mt-6"></div>
   </div>
-
-  <div class="categoria">
-    <h2>2º Flagrante</h2>
-    <button onclick="sortear('resultado2')">Sortear</button>
-    <div class="resultado" id="resultado2"></div>
-  </div>
-
-  <div class="categoria">
-    <h2>3º Flagrante</h2>
-    <button onclick="sortear('resultado3')">Sortear</button>
-    <div class="resultado" id="resultado3"></div>
-  </div>
-
-  <div class="categoria">
-    <h2>VPI</h2>
-    <button onclick="sortear('resultado4')">Sortear</button>
-    <div class="resultado" id="resultado4"></div>
-  </div>
-
-  <div class="categoria">
-    <h2>Mandado de Prisão</h2>
-    <button onclick="sortear('resultado5')">Sortear</button>
-    <div class="resultado" id="resultado5"></div>
-  </div>
-
-  <div class="categoria">
-    <h2>RAI</h2>
-    <button onclick="sortear('resultado6')">Sortear</button>
-    <div class="resultado" id="resultado6"></div>
-  </div>
-
-  <script>
-    const nomes = [
-      "Agente A", "Agente B", "Agente C", "Agente D",
-      "Agente E", "Agente F", "Agente G", "Agente H"
-    ];
-
-    function sortear(id) {
-      const index = Math.floor(Math.random() * nomes.length);
-      const nome = nomes[index];
-      document.getElementById(id).innerText = nome;
-    }
-  </script>
 </body>
 </html>
