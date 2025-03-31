@@ -68,15 +68,15 @@
     }
   </style>
 </head>
-<body class="min-h-screen p-6">
-  <div class="max-w-5xl mx-auto p-10 rounded-3xl shadow-2xl border border-[var(--border)] card">
+<body class="min-h-screen px-2 py-4 sm:px-4 md:px-6 lg:px-10">
+  <div class="w-full max-w-6xl mx-auto p-4 md:p-8 rounded-3xl shadow-2xl border border-[var(--border)] card">
 
     <div class="text-center mb-6 no-print">
-      <img src="PCGOnovobrasao.png" alt="Brasão Polícia Civil GO" class="mx-auto mb-4 w-40 h-auto">
-      <h1 class="text-5xl font-extrabold tracking-tight" style="color: var(--text-primary); text-shadow: 1px 1px 4px #000;">
+      <img src="PCGOnovobrasao.png" alt="Brasão Polícia Civil GO" class="mx-auto mb-4 w-24 sm:w-32 md:w-40 h-auto">
+      <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight" style="color: var(--text-primary); text-shadow: 1px 1px 4px #000;">
         🎯 Sorteio de Procedimentos
         <br>
-        <span class="text-2xl font-light" style="color: var(--text-secondary);">
+        <span class="text-base sm:text-lg md:text-xl lg:text-2xl font-light" style="color: var(--text-secondary);">
           CENTRAL GERAL DE FLAGRANTES E PRONTO ATENDIMENTO AO CIDADÃO DE RIO VERDE/GO
         </span>
       </h1>
@@ -91,9 +91,9 @@
       </div>
     </div>    
 
-    <div class="mb-8 no-print">
-      <label class="block text-lg font-semibold mb-2" style="color: var(--accent);">👥 Quantidade de Escrivães:</label>
-      <select id="agentCount" class="w-full rounded-lg p-3 text-lg" onchange="generateAgentInputs()">
+    <div class="mb-6 no-print">
+      <label class="block text-base sm:text-lg font-semibold mb-2" style="color: var(--accent);">👥 Quantidade de Escrivães:</label>
+      <select id="agentCount" class="w-full rounded-lg p-3 text-base sm:text-lg" onchange="generateAgentInputs()">
         <option value="">Selecione</option>
         <option value="1">1</option>
         <option value="2">2</option>
@@ -111,8 +111,8 @@
     <div id="agentInputs" class="mb-8 space-y-4 no-print"></div>
 
     <div class="mb-8 no-print">
-      <label class="block text-lg font-semibold mb-3" style="color: var(--accent);">📌 Procedimentos:</label>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <label class="block text-base sm:text-lg font-semibold mb-3" style="color: var(--accent);">📌 Procedimentos:</label>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <label class="flex items-center px-3 py-2 rounded-lg shadow border card">
           <input type="checkbox" class="procedure-checkbox mr-2" value="Flagrante">Flagrante
         </label>
@@ -128,11 +128,11 @@
       </div>
     </div>
 
-    <div class="text-center mt-10 no-print">
-      <button onclick="drawAssignments()" class="px-8 py-4 rounded-full text-xl font-bold shadow-lg transition-all duration-300" style="background-color: var(--accent); color: var(--bg);">
+    <div class="text-center mt-10 no-print flex flex-col sm:flex-row justify-center gap-4">
+      <button onclick="drawAssignments()" class="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 rounded-full text-base sm:text-xl font-bold shadow-lg transition-all duration-300" style="background-color: var(--accent); color: var(--bg);">
         🎲 Sortear Procedimentos
       </button>
-      <button onclick="window.print()" class="ml-4 px-8 py-4 rounded-full text-xl font-bold shadow-lg transition-all duration-300" style="background-color: var(--accent); color: var(--bg);">
+      <button onclick="window.print()" class="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 rounded-full text-base sm:text-xl font-bold shadow-lg transition-all duration-300" style="background-color: var(--accent); color: var(--bg);">
         🖨️ Imprimir Relatório
       </button>
     </div>
