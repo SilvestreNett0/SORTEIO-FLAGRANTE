@@ -6,28 +6,139 @@
   <title>Sorteio de Procedimentos</title>
   <script defer src="script.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #121212;
+      --text-primary: #E0E0E0;
+      --text-secondary: #B0B0B0;
+      --border: #444444;
+      --accent: #888888;
+      --card-bg: #1E1E1E;
+      --result-bg: #222222;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    input, select, textarea {
+      background-color: var(--card-bg);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+    }
+
+    .result-box {
+      background-color: var(--result-bg);
+      border: 1px solid var(--border);
+    }
+
+    @media print {
+      body {
+        background: white;
+        color: black;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-header {
+        display: block;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .print-header img {
+        width: 100px;
+        margin-bottom: 10px;
+      }
+      .print-title {
+        font-size: 18pt;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .print-subtitle {
+        font-size: 12pt;
+        margin-bottom: 15px;
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-100 p-6">
-  <div class="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow">
-    <h1 class="text-2xl font-bold mb-4">Sorteio de Procedimentos - Delegacia</h1>
+<body class="min-h-screen p-6">
+  <div class="max-w-5xl mx-auto p-10 rounded-3xl shadow-2xl border border-[var(--border)] card">
 
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block font-semibold">Escrivães (1 por linha):</label>
-        <textarea id="agents" class="w-full h-48 p-2 border rounded" placeholder="Ex: Verônica\nCarlos\nJoana"></textarea>
+    <div class="text-center mb-6 no-print">
+      <img src="PCGOnovobrasao.png" alt="Brasão Polícia Civil GO" class="mx-auto mb-4 w-40 h-auto">
+      <h1 class="text-5xl font-extrabold tracking-tight" style="color: var(--text-primary); text-shadow: 1px 1px 4px #000;">
+        🎯 Sorteio de Procedimentos
+        <br>
+        <span class="text-2xl font-light" style="color: var(--text-secondary);">
+          CENTRAL GERAL DE FLAGRANTES E PRONTO ATENDIMENTO AO CIDADÃO DE RIO VERDE/GO
+        </span>
+      </h1>
+    </div>
+
+    <div class="print-header hidden text-center">
+      <img src="PCGOnovobrasao.png" alt="Brasão Polícia Civil GO" class="mx-auto mb-2 w-24 h-auto">
+      <div class="print-title">RELATÓRIO DE DISTRIBUIÇÃO DE PROCEDIMENTOS</div>
+      <div class="print-subtitle">
+        CENTRAL GERAL DE FLAGRANTES E PRONTO ATENDIMENTO AO CIDADÃO<br>
+        DELEGACIA DE POLÍCIA CIVIL DE RIO VERDE/GO
       </div>
+    </div>    
 
-      <div>
-        <label class="block font-semibold">Procedimentos (formato: Tipo - Quantidade):</label>
-        <textarea id="procedures" class="w-full h-48 p-2 border rounded" placeholder="Ex: Flagrante - 3\nMandado - 2\nVPI - 3\nUI - 2"></textarea>
+    <div class="mb-8 no-print">
+      <label class="block text-lg font-semibold mb-2" style="color: var(--accent);">👥 Quantidade de Escrivães:</label>
+      <select id="agentCount" class="w-full rounded-lg p-3 text-lg" onchange="generateAgentInputs()">
+        <option value="">Selecione</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10</option>
+      </select>
+    </div>
+
+    <div id="agentInputs" class="mb-8 space-y-4 no-print"></div>
+
+    <div class="mb-8 no-print">
+      <label class="block text-lg font-semibold mb-3" style="color: var(--accent);">📌 Procedimentos:</label>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <label class="flex items-center px-3 py-2 rounded-lg shadow border card">
+          <input type="checkbox" class="procedure-checkbox mr-2" value="Flagrante">Flagrante
+        </label>
+        <label class="flex items-center px-3 py-2 rounded-lg shadow border card">
+          <input type="checkbox" class="procedure-checkbox mr-2" value="Mandado de Prisão">Mandado de Prisão
+        </label>
+        <label class="flex items-center px-3 py-2 rounded-lg shadow border card">
+          <input type="checkbox" class="procedure-checkbox mr-2" value="VPI">VPI
+        </label>
+        <label class="flex items-center px-3 py-2 rounded-lg shadow border card">
+          <input type="checkbox" class="procedure-checkbox mr-2" value="RAI">RAI
+        </label>
       </div>
     </div>
 
-    <div class="mt-6">
-      <button onclick="drawAssignments()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Sortear</button>
+    <div class="text-center mt-10 no-print">
+      <button onclick="drawAssignments()" class="px-8 py-4 rounded-full text-xl font-bold shadow-lg transition-all duration-300" style="background-color: var(--accent); color: var(--bg);">
+        🎲 Sortear Procedimentos
+      </button>
+      <button onclick="window.print()" class="ml-4 px-8 py-4 rounded-full text-xl font-bold shadow-lg transition-all duration-300" style="background-color: var(--accent); color: var(--bg);">
+        🖨️ Imprimir Relatório
+      </button>
     </div>
 
-    <div id="results" class="mt-6"></div>
+    <div id="results" class="mt-14 w-full flex flex-col items-center gap-6"></div>
+
   </div>
 </body>
 </html>
