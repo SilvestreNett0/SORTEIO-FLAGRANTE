@@ -60,29 +60,14 @@ function drawAssignments() {
   let agentMap = {};
   agents.forEach(agent => agentMap[agent] = []);
 
-  // Geração balanceada por procedimento
+  // Distribuição ordenada por posição dos agentes
   for (let checkbox of procedureCheckboxes) {
     const type = checkbox.value;
-    let taskPairs = [];
 
-    // Para cada agente, cria duas tarefas numeradas (1º e 2º)
-    for (let i = 1; i <= agents.length; i++) {
-      taskPairs.push(`1º ${type}`);
-      taskPairs.push(`2º ${type}`);
-    }
-
-    // Embaralha as tarefas
-    for (let i = taskPairs.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [taskPairs[i], taskPairs[j]] = [taskPairs[j], taskPairs[i]];
-    }
-
-    // Distribuição cíclica: cada agente recebe uma tarefa por rodada
-    let index = 0;
-    for (let task of taskPairs) {
-      const agent = agents[index % agents.length];
-      agentMap[agent].push(task);
-      index++;
+    // Para cada agente, cria um procedimento numerado correspondente à sua posição
+    for (let i = 0; i < agents.length; i++) {
+      const ordem = `${i + 1}º ${type}`;
+      agentMap[agents[i]].push(ordem);
     }
   }
 
