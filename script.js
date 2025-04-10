@@ -8,8 +8,8 @@ function generateAgentInputs() {
     const div = document.createElement('div');
     div.className = "w-full";
     div.innerHTML = `
-      <label class="block text-blue-700 font-medium">✍️ Escriv\u00e3 Nº ${i}</label>
-      <input type="text" class="w-full border rounded-lg p-3 text-lg" id="agent-${i}" placeholder="Digite o nome da escriv\u00e3 ${i}" />
+      <label class="block text-blue-700 font-medium">✍️ Escrivã Nº ${i}</label>
+      <input type="text" class="w-full border rounded-lg p-3 text-lg" id="agent-${i}" placeholder="Digite o nome da escrivã ${i}" />
     `;
     container.appendChild(div);
   }
@@ -60,21 +60,29 @@ function drawAssignments() {
   let agentMap = {};
   agents.forEach(agent => agentMap[agent] = []);
 
+  // Geração balanceada por procedimento
   for (let checkbox of procedureCheckboxes) {
     const type = checkbox.value;
-    let tasks = [];
-    for (let i = 1; i <= agentCount; i++) {
-      tasks.push(`${i}\u00ba ${type}`);
+    let taskPairs = [];
+
+    // Para cada agente, cria duas tarefas numeradas (1º e 2º)
+    for (let i = 1; i <= agents.length; i++) {
+      taskPairs.push(`1º ${type}`);
+      taskPairs.push(`2º ${type}`);
     }
 
-    let shuffledAgents = [...agents];
-    for (let i = shuffledAgents.length - 1; i > 0; i--) {
+    // Embaralha as tarefas
+    for (let i = taskPairs.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [shuffledAgents[i], shuffledAgents[j]] = [shuffledAgents[j], shuffledAgents[i]];
+      [taskPairs[i], taskPairs[j]] = [taskPairs[j], taskPairs[i]];
     }
 
-    for (let i = 0; i < tasks.length; i++) {
-      agentMap[shuffledAgents[i]].push(tasks[i]);
+    // Distribuição cíclica: cada agente recebe uma tarefa por rodada
+    let index = 0;
+    for (let task of taskPairs) {
+      const agent = agents[index % agents.length];
+      agentMap[agent].push(task);
+      index++;
     }
   }
 
