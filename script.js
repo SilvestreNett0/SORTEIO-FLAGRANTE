@@ -8,8 +8,8 @@ function generateAgentInputs() {
     const div = document.createElement('div');
     div.className = "w-full";
     div.innerHTML = `
-      <label class="block text-blue-700 font-medium">✍️ Escriv\u00e3 Nº ${i}</label>
-      <input type="text" class="w-full border rounded-lg p-3 text-lg" id="agent-${i}" placeholder="Digite o nome da escriv\u00e3 ${i}" />
+      <label class="block text-blue-700 font-medium">✍️ Escrivã Nº ${i}</label>
+      <input type="text" class="w-full border rounded-lg p-3 text-lg" id="agent-${i}" placeholder="Digite o nome da escrivã ${i}" />
     `;
     container.appendChild(div);
   }
@@ -60,22 +60,39 @@ function drawAssignments() {
   let agentMap = {};
   agents.forEach(agent => agentMap[agent] = []);
 
+  // Lista de pares agente-procedimento para sorteio equilibrado
+  let assignments = [];
+
   for (let checkbox of procedureCheckboxes) {
     const type = checkbox.value;
-    let tasks = [];
-    for (let i = 1; i <= agentCount; i++) {
-      tasks.push(`${i}\u00ba ${type}`);
+    for (let i = 0; i < agents.length; i++) {
+      assignments.push({
+        agentIndex: i,
+        task: `${i + 1}º ${type}`
+      });
     }
+  }
 
-    let shuffledAgents = [...agents];
-    for (let i = shuffledAgents.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledAgents[i], shuffledAgents[j]] = [shuffledAgents[j], shuffledAgents[i]];
-    }
+  // Embaralha os assignments
+  for (let i = assignments.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [assignments[i], assignments[j]] = [assignments[j], assignments[i]];
+  }
 
-    for (let i = 0; i < tasks.length; i++) {
-      agentMap[shuffledAgents[i]].push(tasks[i]);
-    }
+  // Contador para distribuição justa
+  let agentTaskCount = Array(agents.length).fill(0);
+
+  // Redistribui mantendo equilíbrio
+  for (let assign of assignments) {
+    // Encontra o agente com menor carga atual
+    let minCount = Math.min(...agentTaskCount);
+    let candidates = agentTaskCount
+      .map((count, index) => ({ index, count }))
+      .filter(obj => obj.count === minCount);
+
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)].index;
+    agentMap[agents[chosen]].push(assign.task);
+    agentTaskCount[chosen]++;
   }
 
   let html = `
