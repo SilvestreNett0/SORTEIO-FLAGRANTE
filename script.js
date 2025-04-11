@@ -31,8 +31,8 @@ function drawAssignments() {
   const resultsDiv = document.getElementById('results');
   const procedureCheckboxes = document.querySelectorAll('.procedure-checkbox:checked');
 
-  if (!agentCount || agentCount < 1) {
-    alert('Selecione a quantidade de escrivães.');
+  if (!agentCount || agentCount < 2) {
+    alert('Selecione ao menos dois escrivães.');
     return;
   }
 
@@ -52,32 +52,58 @@ function drawAssignments() {
     return;
   }
 
-  if (procedureCheckboxes.length === 0) {
+  const procedures = Array.from(procedureCheckboxes).map(cb => cb.value);
+  if (procedures.length === 0) {
     alert('Selecione ao menos um procedimento.');
     return;
   }
 
-  let agentMap = {};
-  agents.forEach(agent => agentMap[agent] = []);
+  const agentMap = {};
+  const ordemUso = {}; // Ex: { 'THESSA': { '1º': 1, '2º': 2 } }
+  agents.forEach(agent => {
+    agentMap[agent] = [];
+    ordemUso[agent] = {};
+  });
 
-  for (let checkbox of procedureCheckboxes) {
-    const type = checkbox.value;
-    let tasks = [];
-    for (let i = 1; i <= agentCount; i++) {
-      tasks.push(`${i}\u00ba ${type}`);
-    }
+  const maxPorOrdem = Math.ceil(procedures.length / agents.length);
 
-    let shuffledAgents = [...agents];
-    for (let i = shuffledAgents.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledAgents[i], shuffledAgents[j]] = [shuffledAgents[j], shuffledAgents[i]];
-    }
+  for (const proc of procedures) {
+    const ordens = agents.map((_, i) => `${i + 1}º`);
+    const ordensSorteadas = [...ordens].sort(() => Math.random() - 0.5);
+    const agentesSorteados = [...agents].sort(() => Math.random() - 0.5);
+    const usados = new Set();
 
-    for (let i = 0; i < tasks.length; i++) {
-      agentMap[shuffledAgents[i]].push(tasks[i]);
+    for (const ordem of ordensSorteadas) {
+      // Fase 1: tenta candidatos ideais
+      let candidato = agentesSorteados.find(agent =>
+        !usados.has(agent) &&
+        !agentMap[agent].some(t => t.includes(proc)) &&
+        (ordemUso[agent][ordem] || 0) < maxPorOrdem
+      );
+
+      // Fase 2: relaxa o limite de ordem
+      if (!candidato) {
+        candidato = agentesSorteados.find(agent =>
+          !usados.has(agent) &&
+          !agentMap[agent].some(t => t.includes(proc))
+        );
+      }
+
+      // Fallback (não deveria ocorrer)
+      if (!candidato) {
+        candidato = agentesSorteados.find(agent => !usados.has(agent)) || agents[0];
+      }
+
+      agentMap[candidato].push(`${ordem} ${proc}`);
+      ordemUso[candidato][ordem] = (ordemUso[candidato][ordem] || 0) + 1;
+      usados.add(candidato);
     }
   }
 
+  // ⏱ Correção final: reequilibra excesso de "1º", "2º", etc.
+  balancearOrdens(agentMap, agents, agents.map((_, i) => `${i + 1}º`));
+
+  // Renderização
   let html = `
     <div class="text-center mb-6">
       <h2 class="text-2xl font-bold text-blue-500">Resultado do Sorteio</h2>
@@ -91,7 +117,7 @@ function drawAssignments() {
         <h3 class="font-semibold text-lg text-blue-400 mb-2 text-center uppercase">${agent}</h3>
         <ul class="list-disc list-inside text-gray-200">
     `;
-    for (const t of tasks) {
+    for (const t of tasks.sort()) {
       html += `<li>${t}</li>`;
     }
     html += '</ul></div>';
@@ -99,4 +125,56 @@ function drawAssignments() {
 
   html += '</div>';
   resultsDiv.innerHTML = html;
+}
+
+// 🔄 Função de correção equilibrada de ordens (pós-processamento)
+function balancearOrdens(agentMap, agentes, ordens) {
+  const ordemPorAgente = {};
+  agentes.forEach(a => ordemPorAgente[a] = {});
+
+  for (const agente of agentes) {
+    for (const tarefa of agentMap[agente]) {
+      const ordem = tarefa.split(" ")[0];
+      ordemPorAgente[agente][ordem] = (ordemPorAgente[agente][ordem] || 0) + 1;
+    }
+  }
+
+  const maxPorOrdem = Math.ceil(Object.values(agentMap)[0].length / agentes.length);
+
+  for (const ordem of ordens) {
+    let agentesExcesso = agentes.filter(
+      a => (ordemPorAgente[a][ordem] || 0) > maxPorOrdem
+    );
+    let agentesFaltando = agentes.filter(
+      a => (ordemPorAgente[a][ordem] || 0) < maxPorOrdem
+    );
+
+    for (const agenteExcedente of agentesExcesso) {
+      const tarefaExcedente = agentMap[agenteExcedente].find(t => t.startsWith(ordem));
+      const tipo = tarefaExcedente.split(" ").slice(1).join(" ");
+
+      for (const agenteDeficitario of agentesFaltando) {
+        const tarefaSubstituivel = agentMap[agenteDeficitario].find(t => t.endsWith(tipo));
+        if (!tarefaSubstituivel) continue;
+
+        const ordemSub = tarefaSubstituivel.split(" ")[0];
+        if (ordemSub === ordem) continue;
+
+        // Troca
+        agentMap[agenteExcedente] = agentMap[agenteExcedente].map(t =>
+          t === tarefaExcedente ? tarefaSubstituivel : t
+        );
+        agentMap[agenteDeficitario] = agentMap[agenteDeficitario].map(t =>
+          t === tarefaSubstituivel ? tarefaExcedente : t
+        );
+
+        ordemPorAgente[agenteExcedente][ordem]--;
+        ordemPorAgente[agenteExcedente][ordemSub] = (ordemPorAgente[agenteExcedente][ordemSub] || 0) + 1;
+        ordemPorAgente[agenteDeficitario][ordem]++;
+        ordemPorAgente[agenteDeficitario][ordemSub]--;
+
+        break;
+      }
+    }
+  }
 }
