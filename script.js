@@ -58,20 +58,16 @@ function drawAssignments() {
     return;
   }
 
-  // --- LÓGICA DE AUDITORIA ---
+  // --- LÓGICA DE AUDITORIA ATUALIZADA ---
+  let auditHistory = JSON.parse(localStorage.getItem('auditHistory')) || [];
   const now = new Date();
-  const today = now.toLocaleDateString();
-  let auditData = JSON.parse(localStorage.getItem('auditData')) || { date: today, count: 0 };
-
-  if (auditData.date !== today) {
-    auditData = { date: today, count: 1 };
-  } else {
-    auditData.count++;
-  }
-  localStorage.setItem('auditData', JSON.stringify(auditData));
+  const today = now.toLocaleDateString('pt-BR');
   const timestamp = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  // --- FIM DA LÓGICA DE AUDITORIA ---
-
+  
+  // Filtra sorteios do dia atual
+  const sorteiosHoje = auditHistory.filter(s => new Date(s.timestamp).toLocaleDateString('pt-BR') === today);
+  const numeroSorteioDia = sorteiosHoje.length + 1;
+  
   const agentMap = {};
   const ordemUso = {};
   agents.forEach(agent => {
@@ -113,13 +109,24 @@ function drawAssignments() {
 
   balancearOrdens(agentMap, agents, agents.map((_, i) => `${i + 1}º`));
 
+  // Salva o resultado no histórico de auditoria
+  const sorteioAtual = {
+    timestamp: now.toISOString(),
+    escrivaes: agents,
+    procedimentos: procedures,
+    resultados: agentMap
+  };
+  auditHistory.push(sorteioAtual);
+  localStorage.setItem('auditHistory', JSON.stringify(auditHistory));
+  // --- FIM DA LÓGICA DE AUDITORIA ATUALIZADA ---
+
   let html = `
     <div class="text-center mb-6">
       <h2 class="text-2xl font-bold text-blue-500">Resultado do Sorteio</h2>
     </div>
     <div class="mb-6 text-center text-gray-400">
-        <p>✅ Sorteio realizado com sucesso em **${timestamp}**.</p>
-        <p>📊 Este foi o **${auditData.count}º** sorteio realizado neste dispositivo hoje.</p>
+        <p>✅ Sorteio realizado com sucesso em **${today} às ${timestamp}**.</p>
+        <p>📊 Este foi o **${numeroSorteioDia}º** sorteio realizado neste dispositivo hoje.</p>
     </div>
     <div class="flex flex-col items-center gap-6 w-full px-4">
   `;
