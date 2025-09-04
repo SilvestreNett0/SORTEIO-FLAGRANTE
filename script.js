@@ -8,8 +8,8 @@ function generateAgentInputs() {
     const div = document.createElement('div');
     div.className = "w-full";
     div.innerHTML = `
-      <label class="block text-blue-700 font-medium">✍️ Escriv\u00e3 Nº ${i}</label>
-      <input type="text" class="w-full border rounded-lg p-3 text-lg" id="agent-${i}" placeholder="Digite o nome da escriv\u00e3 ${i}" />
+      <label class="block text-blue-700 font-medium">✍️ Escrivã Nº ${i}</label>
+      <input type="text" class="w-full border rounded-lg p-3 text-lg" id="agent-${i}" placeholder="Digite o nome da escrivã ${i}" />
     `;
     container.appendChild(div);
   }
@@ -58,8 +58,22 @@ function drawAssignments() {
     return;
   }
 
+  // --- LÓGICA DE AUDITORIA ---
+  const now = new Date();
+  const today = now.toLocaleDateString();
+  let auditData = JSON.parse(localStorage.getItem('auditData')) || { date: today, count: 0 };
+
+  if (auditData.date !== today) {
+    auditData = { date: today, count: 1 };
+  } else {
+    auditData.count++;
+  }
+  localStorage.setItem('auditData', JSON.stringify(auditData));
+  const timestamp = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  // --- FIM DA LÓGICA DE AUDITORIA ---
+
   const agentMap = {};
-  const ordemUso = {}; // Ex: { 'THESSA': { '1º': 1, '2º': 2 } }
+  const ordemUso = {};
   agents.forEach(agent => {
     agentMap[agent] = [];
     ordemUso[agent] = {};
@@ -74,14 +88,12 @@ function drawAssignments() {
     const usados = new Set();
 
     for (const ordem of ordensSorteadas) {
-      // Fase 1: tenta candidatos ideais
       let candidato = agentesSorteados.find(agent =>
         !usados.has(agent) &&
         !agentMap[agent].some(t => t.includes(proc)) &&
         (ordemUso[agent][ordem] || 0) < maxPorOrdem
       );
 
-      // Fase 2: relaxa o limite de ordem
       if (!candidato) {
         candidato = agentesSorteados.find(agent =>
           !usados.has(agent) &&
@@ -89,7 +101,6 @@ function drawAssignments() {
         );
       }
 
-      // Fallback (não deveria ocorrer)
       if (!candidato) {
         candidato = agentesSorteados.find(agent => !usados.has(agent)) || agents[0];
       }
@@ -100,13 +111,15 @@ function drawAssignments() {
     }
   }
 
-  // ⏱ Correção final: reequilibra excesso de "1º", "2º", etc.
   balancearOrdens(agentMap, agents, agents.map((_, i) => `${i + 1}º`));
 
-  // Renderização
   let html = `
     <div class="text-center mb-6">
       <h2 class="text-2xl font-bold text-blue-500">Resultado do Sorteio</h2>
+    </div>
+    <div class="mb-6 text-center text-gray-400">
+        <p>✅ Sorteio realizado com sucesso em **${timestamp}**.</p>
+        <p>📊 Este foi o **${auditData.count}º** sorteio realizado neste dispositivo hoje.</p>
     </div>
     <div class="flex flex-col items-center gap-6 w-full px-4">
   `;
@@ -127,7 +140,6 @@ function drawAssignments() {
   resultsDiv.innerHTML = html;
 }
 
-// 🔄 Função de correção equilibrada de ordens (pós-processamento)
 function balancearOrdens(agentMap, agentes, ordens) {
   const ordemPorAgente = {};
   agentes.forEach(a => ordemPorAgente[a] = {});
@@ -160,7 +172,6 @@ function balancearOrdens(agentMap, agentes, ordens) {
         const ordemSub = tarefaSubstituivel.split(" ")[0];
         if (ordemSub === ordem) continue;
 
-        // Troca
         agentMap[agenteExcedente] = agentMap[agenteExcedente].map(t =>
           t === tarefaExcedente ? tarefaSubstituivel : t
         );
