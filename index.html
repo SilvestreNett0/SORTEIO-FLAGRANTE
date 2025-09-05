@@ -38,11 +38,13 @@
       background-color: var(--result-bg);
       border: 1px solid var(--border);
     }
-
+    
+    /* Regras de CSS para impressão */
     @media print {
       body {
         background: white !important;
         color: black !important;
+        -webkit-print-color-adjust: exact;
       }
     
       .no-print {
@@ -53,6 +55,7 @@
         background-color: white !important;
         color: black !important;
         border-color: black !important;
+        box-shadow: none !important;
       }
     
       input, select, textarea {
@@ -88,13 +91,13 @@
         font-size: 18pt;
         font-weight: bold;
         margin-bottom: 5px;
-        color: #ffffff !important; /* Azul escuro, altere como quiser */
+        color: #000000 !important;
       }
     
       .print-subtitle {
         font-size: 12pt;
         margin-bottom: 15px;
-        color: #ffffff !important; /* Cinza escuro */
+        color: #555555 !important;
       }
     }
   </style>
