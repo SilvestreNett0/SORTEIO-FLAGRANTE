@@ -63,11 +63,11 @@ function drawAssignments() {
   const now = new Date();
   const today = now.toLocaleDateString('pt-BR');
   const timestamp = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  
+
   // Filtra sorteios do dia atual
   const sorteiosHoje = auditHistory.filter(s => new Date(s.timestamp).toLocaleDateString('pt-BR') === today);
   const numeroSorteioDia = sorteiosHoje.length + 1;
-  
+
   const agentMap = {};
   const ordemUso = {};
   agents.forEach(agent => {
@@ -133,7 +133,7 @@ function drawAssignments() {
 
   for (const [agent, tasks] of Object.entries(agentMap)) {
     html += `
-      <div class="p-4 rounded-xl shadow-md border w-full max-w-md" style="background-color: var(--result-bg); border-color: var(--border);">
+      <div class="p-4 rounded-xl shadow-md border w-full max-w-md result-box">
         <h3 class="font-semibold text-lg text-blue-400 mb-2 text-center uppercase">${agent}</h3>
         <ul class="list-disc list-inside text-gray-200">
     `;
