@@ -38,6 +38,41 @@
       background-color: var(--result-bg);
       border: 1px solid var(--border);
     }
+
+    .private-warning-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.94);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .private-warning-card {
+      width: 100%;
+      max-width: 960px;
+      border: 2px solid #dc2626;
+      background: #111827;
+      color: #f9fafb;
+      border-radius: 1rem;
+      padding: 1.25rem;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+    }
+
+    @media (min-width: 768px) {
+      .private-warning-card {
+        padding: 2rem;
+      }
+    }
+
+    .app-blocked {
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.3;
+      filter: blur(1px);
+    }
     
     /* Regras de CSS para impressão */
     @media print {
@@ -103,7 +138,20 @@
   </style>
 </head>
 <body class="min-h-screen px-2 py-4 sm:px-4 md:px-6 lg:px-10">
-  <div class="w-full max-w-6xl mx-auto p-4 md:p-8 rounded-3xl shadow-2xl border border-[var(--border)] card">
+  <div id="privateModeWarning" class="private-warning-overlay hidden" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="private-warning-card text-center">
+      <div class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-red-500 mb-4">🚫 ACESSO BLOQUEADO</div>
+      <div class="text-lg sm:text-2xl font-bold mb-3">Navegação anônima/privada detectada</div>
+      <p class="text-sm sm:text-lg leading-relaxed text-gray-200 mb-4">
+        Por responsabilidade operacional e integridade da auditoria, o sorteio é permitido apenas em navegação normal.
+      </p>
+      <p class="text-sm sm:text-lg leading-relaxed text-gray-300">
+        Feche esta aba anônima/privada e abra o sistema em uma janela padrão do navegador para continuar.
+      </p>
+    </div>
+  </div>
+
+  <div id="appContainer" class="w-full max-w-6xl mx-auto p-4 md:p-8 rounded-3xl shadow-2xl border border-[var(--border)] card">
 
     <div class="text-center mb-6 no-print">
       <img src="PCGOnovobrasao.png" alt="Brasão Polícia Civil GO" class="mx-auto mb-4 w-24 sm:w-32 md:w-40 h-auto">

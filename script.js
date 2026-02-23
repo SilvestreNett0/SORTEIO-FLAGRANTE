@@ -1,4 +1,161 @@
+let privateModeBlocked = false;
+
+function getBrowserInfo() {
+  const ua = navigator.userAgent || '';
+  return {
+    isChromium: /Chrome|CriOS|Edg|OPR|Brave/i.test(ua) && !/Firefox|FxiOS/i.test(ua),
+    isSafari: /Safari/i.test(ua) && !/Chrome|CriOS|Edg|OPR|Brave|Firefox|FxiOS/i.test(ua),
+    isFirefox: /Firefox|FxiOS/i.test(ua),
+    isFileProtocol: location.protocol === 'file:'
+  };
+}
+
+function isDevelopmentPreviewContext() {
+  const hostname = (location.hostname || '').toLowerCase();
+
+  const devHosts = [
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0'
+  ];
+
+  if (devHosts.includes(hostname)) {
+    return true;
+  }
+
+  if (
+    hostname.endsWith('.githubpreview.dev') ||
+    hostname.endsWith('.app.github.dev') ||
+    hostname === 'github.dev' ||
+    hostname.endsWith('.github.dev')
+  ) {
+    return true;
+  }
+
+  if (window.self !== window.top) {
+    return true;
+  }
+
+  return false;
+}
+
+function testFileSystemApi() {
+  return new Promise(resolve => {
+    const fs = window.RequestFileSystem || window.webkitRequestFileSystem;
+    if (!fs) {
+      resolve(false);
+      return;
+    }
+
+    fs(
+      window.TEMPORARY,
+      100,
+      () => resolve(false),
+      () => resolve(true)
+    );
+  });
+}
+
+function testLocalStorageAccess() {
+  try {
+    const testKey = '__private_mode_test__';
+    localStorage.setItem(testKey, 'ok');
+    localStorage.removeItem(testKey);
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+function testIndexedDbAccess() {
+  return new Promise(resolve => {
+    if (!window.indexedDB) {
+      resolve(false);
+      return;
+    }
+
+    try {
+      const request = indexedDB.open('__private_mode_test__');
+      request.onerror = () => resolve(true);
+      request.onsuccess = () => {
+        request.result.close();
+        indexedDB.deleteDatabase('__private_mode_test__');
+        resolve(false);
+      };
+    } catch {
+      resolve(true);
+    }
+  });
+}
+
+async function detectPrivateMode() {
+  const browser = getBrowserInfo();
+
+  if (isDevelopmentPreviewContext()) {
+    return false;
+  }
+
+  const [fsBlockedRaw, indexedDbBlockedRaw] = await Promise.all([
+    testFileSystemApi(),
+    testIndexedDbAccess()
+  ]);
+
+  const localStorageBlocked = testLocalStorageAccess();
+  const fsBlocked = browser.isChromium && !browser.isFileProtocol ? fsBlockedRaw : false;
+  const indexedDbBlocked = !browser.isFileProtocol ? indexedDbBlockedRaw : false;
+
+  if (localStorageBlocked) {
+    return true;
+  }
+
+  if (browser.isSafari) {
+    return indexedDbBlocked;
+  }
+
+  if (browser.isChromium) {
+    return fsBlocked && indexedDbBlocked;
+  }
+
+  if (browser.isFirefox) {
+    return false;
+  }
+
+  return false;
+}
+
+function setPrivateModeBlock(isBlocked) {
+  privateModeBlocked = isBlocked;
+
+  const warning = document.getElementById('privateModeWarning');
+  const app = document.getElementById('appContainer');
+  if (!warning || !app) return;
+
+  if (isBlocked) {
+    warning.classList.remove('hidden');
+    app.classList.add('app-blocked');
+    document.querySelectorAll('#appContainer input, #appContainer select, #appContainer textarea, #appContainer button')
+      .forEach(el => {
+        el.disabled = true;
+      });
+    return;
+  }
+
+  warning.classList.add('hidden');
+  app.classList.remove('app-blocked');
+  document.querySelectorAll('#appContainer input, #appContainer select, #appContainer textarea, #appContainer button')
+    .forEach(el => {
+      el.disabled = false;
+    });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const isPrivate = await detectPrivateMode();
+  setPrivateModeBlock(isPrivate);
+});
+
 function generateAgentInputs() {
+  if (privateModeBlocked) return;
+
   const container = document.getElementById('agentInputs');
   container.innerHTML = '';
   const count = parseInt(document.getElementById('agentCount').value);
@@ -27,6 +184,8 @@ function generateAgentInputs() {
 }
 
 function drawAssignments() {
+  if (privateModeBlocked) return;
+
   const agentCount = parseInt(document.getElementById('agentCount').value);
   const resultsDiv = document.getElementById('results');
   const procedureCheckboxes = document.querySelectorAll('.procedure-checkbox:checked');
