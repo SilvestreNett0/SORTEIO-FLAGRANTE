@@ -1,101 +1,16 @@
-let privateModeBlocked = false;
-
 /**
- * Detecção de navegação privada/incógnita — abordagem conservadora.
- *
- * Estratégia: só bloqueia quando há certeza absoluta de modo privado.
- *   1. Se localStorage lançar exceção ao gravar → bloqueio (sinal definitivo).
- *   2. Em navegadores Chromium: verificar quota de armazenamento via
- *      navigator.storage.estimate(). No modo incógnito o Chrome limita a
- *      quota a ~120 MB, enquanto em modo normal a quota é de vários GB.
- *      Usamos um limiar conservador de 300 MB para não gerar falso positivo.
- *   3. Em qualquer outro cenário → permite acesso (sem falso positivo).
+ * Sistema em manutenção — bloqueia toda interação.
  */
-
-function isChromiumBrowser() {
-  const ua = navigator.userAgent || '';
-  return /Chrome|CriOS|Edg|OPR|Brave/i.test(ua) && !/Firefox|FxiOS/i.test(ua);
-}
-
-function testLocalStorageAccess() {
-  try {
-    const k = '__pm_test_' + Date.now();
-    localStorage.setItem(k, '1');
-    localStorage.removeItem(k);
-    return false;
-  } catch {
-    return true;
-  }
-}
-
-function testStorageQuota() {
-  return new Promise(resolve => {
-    if (!navigator.storage || !navigator.storage.estimate) {
-      resolve(false);
-      return;
-    }
-
-    navigator.storage.estimate()
-      .then(est => {
-        if (typeof est.quota !== 'number') {
-          resolve(false);
-          return;
-        }
-        // Chrome incógnito: ~120 MB.  Normal: vários GB.
-        // Limiar de 300 MB é seguro para não pegar sites normais.
-        resolve(est.quota > 0 && est.quota < 300 * 1024 * 1024);
-      })
-      .catch(() => resolve(false));
-  });
-}
-
-async function detectPrivateMode() {
-  // 1. Sinal definitivo: localStorage bloqueado
-  if (testLocalStorageAccess()) {
-    return true;
-  }
-
-  // 2. Sinal forte para Chromium: quota muito baixa
-  if (isChromiumBrowser()) {
-    return await testStorageQuota();
-  }
-
-  // 3. Demais navegadores: não há método confiável sem falso positivo
-  return false;
-}
-
-function setPrivateModeBlock(isBlocked) {
-  privateModeBlocked = isBlocked;
-
-  const warning = document.getElementById('privateModeWarning');
+document.addEventListener('DOMContentLoaded', () => {
   const app = document.getElementById('appContainer');
-  if (!warning || !app) return;
-
-  if (isBlocked) {
-    warning.classList.remove('hidden');
+  if (app) {
     app.classList.add('app-blocked');
     document.querySelectorAll('#appContainer input, #appContainer select, #appContainer textarea, #appContainer button')
-      .forEach(el => {
-        el.disabled = true;
-      });
-    return;
+      .forEach(el => { el.disabled = true; });
   }
-
-  warning.classList.add('hidden');
-  app.classList.remove('app-blocked');
-  document.querySelectorAll('#appContainer input, #appContainer select, #appContainer textarea, #appContainer button')
-    .forEach(el => {
-      el.disabled = false;
-    });
-}
-
-document.addEventListener('DOMContentLoaded', async () => {
-  const isPrivate = await detectPrivateMode();
-  setPrivateModeBlock(isPrivate);
 });
 
 function generateAgentInputs() {
-  if (privateModeBlocked) return;
 
   const container = document.getElementById('agentInputs');
   container.innerHTML = '';
@@ -125,7 +40,6 @@ function generateAgentInputs() {
 }
 
 function drawAssignments() {
-  if (privateModeBlocked) return;
 
   const agentCount = parseInt(document.getElementById('agentCount').value);
   const resultsDiv = document.getElementById('results');
